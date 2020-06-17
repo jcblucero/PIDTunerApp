@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <EditText
+        android:id="@+id/kd_editText"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="24dp"
+        android:autofillHints="0.0"
+        android:ems="10"
+        android:hint="@string/float_string"
+        android:inputType="numberDecimal"
+        app:layout_constraintStart_toEndOf="@+id/kd_textview"
+        app:layout_constraintTop_toBottomOf="@+id/ki_editText" />
+
+    <TextView
+        android:id="@+id/kd_textview"
+        android:layout_width="87dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/derivative_gain"
+        android:textAlignment="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ki_textview" />
+
+    <TextView
+        android:id="@+id/ki_textview"
+        android:layout_width="87dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/integral_ki"
+        android:textAlignment="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/kp_textview" />
+
+    <EditText
+        android:id="@+id/ki_editText"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="24dp"
+        android:autofillHints="0.0"
+        android:ems="10"
+        android:hint="@string/float_string"
+        android:inputType="numberDecimal"
+        app:layout_constraintStart_toEndOf="@+id/ki_textview"
+        app:layout_constraintTop_toBottomOf="@+id/kp_editText" />
+
+    <TextView
+        android:id="@+id/kp_textview"
+        android:layout_width="87dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/proportional_kp"
+        android:textAlignment="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/throttle_textview" />
+
+    <EditText
+        android:id="@+id/kp_editText"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="24dp"
+        android:autofillHints="1.0"
+        android:ems="10"
+        android:hint="@string/float_string"
+        android:inputType="numberDecimal"
+        app:layout_constraintStart_toEndOf="@+id/kp_textview"
+        app:layout_constraintTop_toBottomOf="@+id/throttle_editText" />
+
+    <TextView
+        android:id="@+id/throttle_textview"
+        android:layout_width="87dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="76dp"
+        android:text="@string/throttle_pwm"
+        android:textAlignment="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/throttle_editText"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="76dp"
+        android:autofillHints="15.0"
+        android:ems="10"
+        android:hint="@string/throttle_float_10_0_20_0"
+        android:inputType="numberDecimal"
+        app:layout_constraintStart_toEndOf="@+id/throttle_textview"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/start_stop_throttle_button"
+        android:layout_width="143dp"
+        android:layout_height="62dp"
+        android:layout_marginEnd="228dp"
+        android:layout_marginBottom="60dp"
+        android:background="#009688"
+        android:text="@string/start_stop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/ble_connection_button"
+        android:layout_width="143dp"
+        android:layout_height="62dp"
+        android:layout_marginEnd="52dp"
+        android:layout_marginBottom="60dp"
+        android:background="#009688"
+        android:text="@string/ble_advertise"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
