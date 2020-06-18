@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
                 ble_connection_state = CONNECTION_STATE.DISCONNECTED;
                 ble_connection_button.setText("Disconnected");
                 //ble_connection_button.setBackgroundColor( ContextCompat.getColor(this,R.color.stopRed ) );
+                ble_connection_button.setBackgroundColor( ContextCompat.getColor(applicationContext,R.color.stopRed ) );
             }
         }
     }
@@ -61,6 +62,7 @@ class MainActivity : AppCompatActivity() {
     //BLE Management Variables
     lateinit var bluetooth_adapter: BluetoothAdapter;
     lateinit var gatt_server_callback : GattServerCallback;
+    lateinit var gatt_server : BluetoothGattServer;
     lateinit var ble_advertiser : BluetoothLeAdvertiser;
     lateinit var ble_advertising_settings: AdvertiseSettings;
     lateinit var ble_advertising_data: AdvertiseData;
@@ -99,6 +101,9 @@ class MainActivity : AppCompatActivity() {
             .build();
 
         ble_advertise_callback = BleAdvertiseCallback();
+
+        //Set up BLE Peripheral Server
+        gatt_server = bluetooth_manager.openGattServer(applicationContext, gatt_server_callback);
 
         //public void startAdvertising (AdvertiseSettings settings,
         //                AdvertiseData advertiseData,
