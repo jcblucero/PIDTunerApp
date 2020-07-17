@@ -23,6 +23,42 @@ enum class CONNECTION_STATE {
     DISCONNECTED, ADVERTISING, CONNECTED
 }
 
+
+object PidTunerProfile //Objects are equivalent to singletons in kotlin
+{
+    //PID Tuner will offer 5 characteristics
+    //Throttle PWM: R/W/M - float between 10.0-20.0 representing % duty cycle to command throttle motor
+    //Kp: R/W/M - Float representing PID proportional gain constant
+    //Ki: R/W/M - Float representing PID integral gain constant
+    //Kd: R/W/M - Float representing PID derivative gain constant
+    //Start Stop: R/W/M - Bool telling whether to run start (1), or stop robot (0)
+    val PID_TUNER_SERVICE_UUID: UUID = UUID.fromString("DEADBEEF-3f00-4789-ae47-7e75d6b23bc8");
+    val THROTTLE_CHAR_UUID: UUID = UUID.fromString("DEADBEE1-3f00-4789-ae47-7e75d6b23bc8");
+    val KP_CHAR_UUID: UUID = UUID.fromString("DEADBEE2-3f00-4789-ae47-7e75d6b23bc8");
+    val KI_CHAR_UUID: UUID = UUID.fromString("DEADBEE3-3f00-4789-ae47-7e75d6b23bc8");
+    val KD_CHAR_UUID: UUID = UUID.fromString("DEADBEE4-3f00-4789-ae47-7e75d6b23bc8");
+    val START_STOP_CHAR_UUID: UUID = UUID.fromString("DEADBEE5-3f00-4789-ae47-7e75d6b23bc8");
+    /*Client Characteristic Config Descriptor - Client must write 0x0001 to this to enable notifications */
+    val START_STOP_CCFG_UUID: UUID = UUID.fromString("DEADBEE6-3f00-4789-ae47-7e75d6b23bc8");
+
+    var throttle_pwm: Float = 15.0F;
+    var kp: Float = 1.0F;
+    var ki: Float = 0.2F;
+    var kd: Float = 0.0F;
+    var start_stop_state: Boolean = false;
+
+
+    //When client receives notification of start, it will read other values.
+    //Avoids having to notify when each value changes
+    //Drawback is that we must stop in order to change characteristics
+
+
+
+
+    
+
+}
+
 class MainActivity : AppCompatActivity() {
 
 
@@ -104,7 +140,7 @@ class MainActivity : AppCompatActivity() {
 
         //Set up BLE Peripheral Server
         gatt_server = bluetooth_manager.openGattServer(applicationContext, gatt_server_callback);
-
+        //gatt_server.addService(PidTunerProfile.createBleService())
         //public void startAdvertising (AdvertiseSettings settings,
         //                AdvertiseData advertiseData,
         //                AdvertiseCallback callback)
