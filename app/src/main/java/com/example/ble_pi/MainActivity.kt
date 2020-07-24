@@ -52,7 +52,34 @@ object PidTunerProfile //Objects are equivalent to singletons in kotlin
     //Avoids having to notify when each value changes
     //Drawback is that we must stop in order to change characteristics
 
+    //Create a BluetoothGattService,
+    //Add service characteristics and descriptors
+    //Return the created BluetoothGattService
+    fun CreatePidTunerService(): BluetoothGattService {
+        val service = BluetoothGattService(PID_TUNER_SERVICE_UUID, BluetoothGattService.SERVICE_TYPE_PRIMARY);
 
+        /* TODO: Add service BluetoothGattCharacteristic + config descriptor (BluetoothGattDescriptor) */
+
+        return service;
+    }
+
+    //Multiply float by 1000 to go to 3 digit significance
+    // receiver will have to divide by
+    //Must do this because Kotlin does not provide bitwise functions for floats, so convert to int
+    fun PackFloatToByteArray(value: Float) : ByteArray {
+        //TODO: Check whether ByteArray == Bytes[] in Kotlin
+        val bytes = ByteArray(4);
+        val converted_val = (value * 1000).toInt();
+        bytes[3] = (converted_val and 0xFFFF).toByte()
+        bytes[2] = ((converted_val ushr 8) and 0xFFFF).toByte()
+        bytes[1] = ((converted_val ushr 16) and 0xFFFF).toByte()
+        bytes[0] = ((converted_val ushr 24) and 0xFFFF).toByte()
+        return bytes;
+    }
+
+    fun ReadCharacteristic(char_uuid: UUID){
+        switch(UUID)...
+    }
 
 
     
