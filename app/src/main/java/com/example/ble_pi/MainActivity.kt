@@ -24,6 +24,7 @@ enum class CONNECTION_STATE {
 }
 
 
+//Implementation of a PIDTunerProfile for Android in Kotlin
 object PidTunerProfile //Objects are equivalent to singletons in kotlin
 {
     //PID Tuner will offer 5 characteristics
@@ -45,7 +46,11 @@ object PidTunerProfile //Objects are equivalent to singletons in kotlin
     var kp: Float = 1.0F;
     var ki: Float = 0.2F;
     var kd: Float = 0.0F;
-    var start_stop_state: Boolean = false;
+    //0 = stop, 1 = start
+    var start_stop_state: Int = 0;
+
+    /* Collection of notification subscribers */
+    private val registeredDevices = mutableSetOf<BluetoothDevice>()
 
 
     //When client receives notification of start, it will read other values.
@@ -64,25 +69,95 @@ object PidTunerProfile //Objects are equivalent to singletons in kotlin
     }
 
     //Multiply float by 1000 to go to 3 digit significance
-    // receiver will have to divide by
-    //Must do this because Kotlin does not provide bitwise functions for floats, so convert to int
+    // receiver will have to divide by 1000
+    //Must do this because Kotlin does not provide bitwise (&,>>, etc) functions for floats,
+    // so convert to int
     fun PackFloatToByteArray(value: Float) : ByteArray {
-        //TODO: Check whether ByteArray == Bytes[] in Kotlin
         val bytes = ByteArray(4);
         val converted_val = (value * 1000).toInt();
-        bytes[3] = (converted_val and 0xFFFF).toByte()
-        bytes[2] = ((converted_val ushr 8) and 0xFFFF).toByte()
-        bytes[1] = ((converted_val ushr 16) and 0xFFFF).toByte()
-        bytes[0] = ((converted_val ushr 24) and 0xFFFF).toByte()
+        bytes[3] = (converted_val and 0xFF).toByte()
+        bytes[2] = ((converted_val ushr 8) and 0xFF).toByte()
+        bytes[1] = ((converted_val ushr 16) and 0xFF).toByte()
+        bytes[0] = ((converted_val ushr 24) and 0xFF).toByte()
         return bytes;
     }
 
-    fun ReadCharacteristic(char_uuid: UUID){
-        switch(UUID)...
+    //Convert Integer to Network Order (big endian) byte array
+    fun PackIntToByteArray(value: Int): ByteArray {
+        val bytes = ByteArray(4);
+        bytes[3] = (value and 0xFF).toByte()
+        bytes[2] = ((value ushr 8) and 0xFF).toByte()
+        bytes[1] = ((value ushr 16) and 0xFF).toByte()
+        bytes[0] = ((value ushr 24) and 0xFF).toByte()
+        return bytes;
     }
 
+    //Returns a byte array (size 4) of the value for the given characteristic UUID
+    //Meant to be used with android onCharacteristicReadRequest of BluetoothGattServerCallback....
+    //...next time make read generic, instead of tied to API (return value instead of ByteArray)
+    fun ReadCharacteristicByUuid(char_uuid: UUID) : ByteArray? {
+        //switch(UUID)...
+        when {
+            PidTunerProfile.KP_CHAR_UUID == char_uuid -> {
+                return PackFloatToByteArray(kp);
+            }
+            PidTunerProfile.KI_CHAR_UUID == char_uuid -> {
+                return PackFloatToByteArray(ki);
+            }
+            PidTunerProfile.KD_CHAR_UUID == char_uuid -> {
+                return PackFloatToByteArray(kd);
+            }
+            PidTunerProfile.THROTTLE_CHAR_UUID == char_uuid -> {
+                return PackFloatToByteArray(throttle_pwm);
+            }
+            PidTunerProfile.START_STOP_CHAR_UUID == char_uuid -> {
+                return PackIntToByteArray(start_stop_state);
+            }
+            else -> {
+                return null;
+            }
+        }
+    }
 
-    
+    fun ReadDescriptorByUuid(descriptor_uuid: UUID, device: BluetoothDevice) : ByteArray?
+    {
+        Log.d("PID_TUNER_PROFILE", "Config descriptor read")
+        when {
+            PidTunerProfile.START_STOP_CCFG_UUID == descriptor_uuid -> {
+                if (registeredDevices.contains(device)) {
+                    return BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
+                }
+                else {
+                    return BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
+                }
+            }
+            else -> {
+                return null;
+            }
+        }
+    }
+
+    //Writes descriptor for given UUID
+    //Only Client Characteristic Configuration Descriptor is supported
+    //Must write 0x0001 to enable notifications as per BT spec
+    fun WriteDescriptorByUuid(descriptor_uuid: UUID, device: BluetoothDevice, write_value: ByteArray) : ByteArray?{
+        when {
+            PidTunerProfile.START_STOP_CCFG_UUID == descriptor_uuid -> {
+                if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, write_value)) {
+                    Log.d("PID_TUNER_PROFILE", "Subscribe device to notifications: $device")
+                    registeredDevices.add(device)
+                } else if (Arrays.equals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE, write_value)) {
+                    Log.d("PID_TUNER_PROFILE", "Unsubscribe device from notifications: $device")
+                    registeredDevices.remove(device)
+                }
+            }
+            else -> {
+                return null;
+            }
+        }
+    }
+    //Writes: vars are public by default, just write manually if you want to modify
+
 
 }
 
