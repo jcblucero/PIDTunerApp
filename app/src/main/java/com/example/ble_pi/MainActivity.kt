@@ -137,10 +137,10 @@ object PidTunerProfile //Objects are equivalent to singletons in kotlin
         }
     }
 
-    //Writes descriptor for given UUID
+    //Writes descriptor for given UUID, returnn True if written, false if not
     //Only Client Characteristic Configuration Descriptor is supported
     //Must write 0x0001 to enable notifications as per BT spec
-    fun WriteDescriptorByUuid(descriptor_uuid: UUID, device: BluetoothDevice, write_value: ByteArray) : ByteArray?{
+    fun WriteDescriptorByUuid(descriptor_uuid: UUID, device: BluetoothDevice, write_value: ByteArray) : Boolean {
         when {
             PidTunerProfile.START_STOP_CCFG_UUID == descriptor_uuid -> {
                 if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, write_value)) {
@@ -150,9 +150,10 @@ object PidTunerProfile //Objects are equivalent to singletons in kotlin
                     Log.d("PID_TUNER_PROFILE", "Unsubscribe device from notifications: $device")
                     registeredDevices.remove(device)
                 }
+                return true;
             }
             else -> {
-                return null;
+                return false;
             }
         }
     }
