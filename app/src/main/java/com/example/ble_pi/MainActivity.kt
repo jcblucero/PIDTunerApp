@@ -63,8 +63,29 @@ object PidTunerProfile //Objects are equivalent to singletons in kotlin
     fun CreatePidTunerService(): BluetoothGattService {
         val service = BluetoothGattService(PID_TUNER_SERVICE_UUID, BluetoothGattService.SERVICE_TYPE_PRIMARY);
 
+        val property_read_write = BluetoothGattCharacteristic.PROPERTY_READ or BluetoothGattCharacteristic.PROPERTY_WRITE;
+        val permission_read_write = BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE;
+        //read,write,notify
+        val property_rwn = property_read_write or BluetoothGattCharacteristic.PROPERTY_NOTIFY;
         /* TODO: Add service BluetoothGattCharacteristic + config descriptor (BluetoothGattDescriptor) */
+        //Create Characteristics
+        var throttle_characteristic = BluetoothGattCharacteristic(THROTTLE_CHAR_UUID,property_read_write,permission_read_write);
+        var kp_characteristic = BluetoothGattCharacteristic(KP_CHAR_UUID,property_read_write,permission_read_write);
+        var ki_characteristic = BluetoothGattCharacteristic(KI_CHAR_UUID,property_read_write,permission_read_write);
+        var kd_characteristic = BluetoothGattCharacteristic(KD_CHAR_UUID,property_read_write,permission_read_write);
+        var start_stop_characteristic = BluetoothGattCharacteristic(START_STOP_CHAR_UUID,property_rwn,permission_read_write);
 
+        //Add CCFG descriptor to start stop characteristic
+        var start_stop_descriptor = BluetoothGattDescriptor(START_STOP_CCFG_UUID,permission_read_write);
+        start_stop_characteristic.addDescriptor(start_stop_descriptor);
+
+        //Now add characteristics to service
+        service.addCharacteristic(throttle_characteristic);
+        service.addCharacteristic(kp_characteristic);
+        service.addCharacteristic(ki_characteristic);
+        service.addCharacteristic(kd_characteristic);
+        service.addCharacteristic(start_stop_characteristic);
+        
         return service;
     }
 
