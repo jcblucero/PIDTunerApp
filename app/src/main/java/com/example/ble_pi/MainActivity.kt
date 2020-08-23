@@ -67,7 +67,7 @@ object PidTunerProfile //Objects are equivalent to singletons in kotlin
         val permission_read_write = BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE;
         //read,write,notify
         val property_rwn = property_read_write or BluetoothGattCharacteristic.PROPERTY_NOTIFY;
-        /* TODO: Add service BluetoothGattCharacteristic + config descriptor (BluetoothGattDescriptor) */
+
         //Create Characteristics
         var throttle_characteristic = BluetoothGattCharacteristic(THROTTLE_CHAR_UUID,property_read_write,permission_read_write);
         var kp_characteristic = BluetoothGattCharacteristic(KP_CHAR_UUID,property_read_write,permission_read_write);
@@ -85,7 +85,7 @@ object PidTunerProfile //Objects are equivalent to singletons in kotlin
         service.addCharacteristic(ki_characteristic);
         service.addCharacteristic(kd_characteristic);
         service.addCharacteristic(start_stop_characteristic);
-        
+
         return service;
     }
 
@@ -202,6 +202,8 @@ class MainActivity : AppCompatActivity() {
                 ble_connection_button.setBackgroundColor( ContextCompat.getColor(applicationContext,R.color.stopRed ) );
             }
         }
+
+        /*TODO: Add on read/write char/desc callbacks*/
     }
 
     inner class BleAdvertiseCallback(): AdvertiseCallback()
@@ -264,6 +266,7 @@ class MainActivity : AppCompatActivity() {
 
         //Set up BLE Peripheral Server
         gatt_server = bluetooth_manager.openGattServer(applicationContext, gatt_server_callback);
+        /*TODO: Add service */
         //gatt_server.addService(PidTunerProfile.createBleService())
         //public void startAdvertising (AdvertiseSettings settings,
         //                AdvertiseData advertiseData,
