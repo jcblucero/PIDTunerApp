@@ -39,8 +39,10 @@ object PidTunerProfile //Objects are equivalent to singletons in kotlin
     val KI_CHAR_UUID: UUID = UUID.fromString("DEADBEE3-3f00-4789-ae47-7e75d6b23bc8");
     val KD_CHAR_UUID: UUID = UUID.fromString("DEADBEE4-3f00-4789-ae47-7e75d6b23bc8");
     val START_STOP_CHAR_UUID: UUID = UUID.fromString("DEADBEE5-3f00-4789-ae47-7e75d6b23bc8");
-    /*Client Characteristic Config Descriptor - Client must write 0x0001 to this to enable notifications */
-    val START_STOP_CCFG_UUID: UUID = UUID.fromString("DEADBEE6-3f00-4789-ae47-7e75d6b23bc8");
+    /*Client Characteristic Config Descriptor - Client must write 0x0001 to this to enable notifications
+    * (CCCD) 16 bit UUID 2902 as per BT spec. So standard BT UUID + 16 bit = full 128 bit
+    * */
+    val START_STOP_CCFG_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     var throttle_pwm: Float = 15.0F;
     var kp: Float = 1.0F;
@@ -118,6 +120,7 @@ object PidTunerProfile //Objects are equivalent to singletons in kotlin
     //...next time make read generic, instead of tied to API (return value instead of ByteArray)
     fun ReadCharacteristicByUuid(char_uuid: UUID) : ByteArray? {
         //switch(UUID)...
+        Log.d("PID_TUNER_PROFILE", "Read Characteristic by UUID")
         when {
             PidTunerProfile.KP_CHAR_UUID == char_uuid -> {
                 return PackFloatToByteArray(kp);
@@ -203,7 +206,82 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        /*TODO: Add on read/write char/desc callbacks*/
+
+        override fun onCharacteristicReadRequest(device: BluetoothDevice, requestId: Int, offset: Int,
+                                                 characteristic: BluetoothGattCharacteristic)
+        {
+            var response = PidTunerProfile.ReadCharacteristicByUuid(characteristic.uuid);
+            if(response != null)
+            {
+                gatt_server?.sendResponse(device,
+                    requestId,
+                    BluetoothGatt.GATT_SUCCESS,
+                    0,
+                    response)
+            }
+            else
+            {
+                // Invalid characteristic
+                Log.d("GATTServerCallback", "Invalid Characteristic Read: " + characteristic.uuid)
+                gatt_server?.sendResponse(device,
+                    requestId,
+                    BluetoothGatt.GATT_FAILURE,
+                    0,
+                    null)
+            }
+        } /* End onCharacteristicReadRequest */
+
+        override fun onDescriptorReadRequest(device: BluetoothDevice, requestId: Int, offset: Int,
+                                             descriptor: BluetoothGattDescriptor)
+        {
+            var response = PidTunerProfile.ReadDescriptorByUuid(descriptor.uuid, device)
+            if( response != null){
+                gatt_server?.sendResponse(device,
+                    requestId,
+                    BluetoothGatt.GATT_SUCCESS,
+                    0,
+                    response)
+            }
+            else{
+                gatt_server?.sendResponse(device,
+                    requestId,
+                    BluetoothGatt.GATT_FAILURE,
+                    0,
+                    null)
+            }
+        }
+
+        override fun onDescriptorWriteRequest(device: BluetoothDevice, requestId: Int,
+                                             descriptor: BluetoothGattDescriptor,
+                                             preparedWrite: Boolean, responseNeeded: Boolean,
+                                             offset: Int, value: ByteArray)
+        {
+            var success = PidTunerProfile.WriteDescriptorByUuid(descriptor.uuid, device, value)
+            if( success ){
+                if(responseNeeded) {
+                    gatt_server?.sendResponse(
+                        device,
+                        requestId,
+                        BluetoothGatt.GATT_SUCCESS,
+                        0,
+                        null)
+                }
+            }
+            else{
+                if(responseNeeded) {
+                    gatt_server?.sendResponse(
+                        device,
+                        requestId,
+                        BluetoothGatt.GATT_FAILURE,
+                        0,
+                        null
+                    )
+                }
+            }
+        }
+
+
+
     }
 
     inner class BleAdvertiseCallback(): AdvertiseCallback()
@@ -266,8 +344,8 @@ class MainActivity : AppCompatActivity() {
 
         //Set up BLE Peripheral Server
         gatt_server = bluetooth_manager.openGattServer(applicationContext, gatt_server_callback);
-        /*TODO: Add service */
-        //gatt_server.addService(PidTunerProfile.createBleService())
+        
+        gatt_server.addService(PidTunerProfile.CreatePidTunerService())
         //public void startAdvertising (AdvertiseSettings settings,
         //                AdvertiseData advertiseData,
         //                AdvertiseCallback callback)
@@ -283,6 +361,7 @@ class MainActivity : AppCompatActivity() {
 
 
         //Button Listeners
+        /*TODO: notify when start/stop changed*/
         start_stop_button = findViewById<Button>(R.id.start_stop_throttle_button);
         start_stop_button?.setOnClickListener()
         {
