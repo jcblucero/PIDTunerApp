@@ -10,9 +10,12 @@ import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.ParcelUuid
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import androidx.core.content.ContextCompat
 import java.util.*
 
@@ -183,6 +186,24 @@ object PidTunerProfile //Objects are equivalent to singletons in kotlin
     }
     //Writes: vars are public by default, just write manually if you want to modify
 
+    fun WriteAndNotifyStartStop(new_state : Int, ble_gatt_server : BluetoothGattServer)
+    {
+        start_stop_state = new_state;
+        if (registeredDevices.isEmpty()) {
+            Log.i("Notify_PIDProfile", "No subscribers registered")
+            return
+        }
+
+        Log.i("Notify_PIDProfile", "Sending update to ${registeredDevices.size} subscribers")
+        for (device in registeredDevices)
+        {
+            var start_stop_characteristic = ble_gatt_server?.getService(PID_TUNER_SERVICE_UUID)
+                ?.getCharacteristic(START_STOP_CHAR_UUID);
+            start_stop_characteristic?.value = PackIntToByteArray(start_stop_state);
+            ble_gatt_server?.notifyCharacteristicChanged(device, start_stop_characteristic, false)
+
+        }
+    }
 
 }
 
@@ -288,6 +309,10 @@ class MainActivity : AppCompatActivity() {
     {
         override fun onStartSuccess(settingsInEffect: AdvertiseSettings?) {
             super.onStartSuccess(settingsInEffect)
+
+
+            Log.e("BLE", advertising_parcel_uuid.toString());
+            Log.i("BLE", ble_advertising_data.toString());
             ble_connection_button.setText("Advertising");
         }
 
@@ -320,6 +345,11 @@ class MainActivity : AppCompatActivity() {
     lateinit var start_stop_button : Button;
     lateinit var ble_connection_button: Button;
 
+    lateinit var throttle_edit_text : EditText;
+    lateinit var kp_edit_text : EditText;
+    lateinit var ki_edit_text : EditText;
+    lateinit var kd_edit_text : EditText;
+
     //Bluetooth LE Initialization
     fun bluetooth_le_init(){
         val bluetooth_manager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -336,8 +366,8 @@ class MainActivity : AppCompatActivity() {
             .build();
         ble_advertising_data = AdvertiseData.Builder()
             //.setIncludeDeviceName(true)
-            //.addServiceUuid(advertising_parcel_uuid)
-            .addServiceData(advertising_parcel_uuid, "HELLO".toByteArray( Charsets.UTF_8 ))
+            .addServiceUuid(advertising_parcel_uuid)
+            //.addServiceData(advertising_parcel_uuid, "HELLO".toByteArray( Charsets.UTF_8 ))
             .build();
 
         ble_advertise_callback = BleAdvertiseCallback();
@@ -359,7 +389,65 @@ class MainActivity : AppCompatActivity() {
         //Bluetooth initialization
         bluetooth_le_init();
 
+        //Add listeners for text box changes
+        throttle_edit_text = findViewById<EditText>(R.id.throttle_editText);
+        kp_edit_text = findViewById<EditText>(R.id.kp_editText);
+        ki_edit_text = findViewById<EditText>(R.id.ki_editText);
+        kd_edit_text = findViewById<EditText>(R.id.kd_editText);
 
+        throttle_edit_text.addTextChangedListener( object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                PidTunerProfile.throttle_pwm = s.toString().toFloat();
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            }
+        })
+        kp_edit_text.addTextChangedListener( object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                PidTunerProfile.kp = s.toString().toFloat();
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            }
+        })
+        ki_edit_text.addTextChangedListener( object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                PidTunerProfile.ki = s.toString().toFloat();
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            }
+        })
+        kd_edit_text.addTextChangedListener( object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                PidTunerProfile.kd = s.toString().toFloat();
+                Log.d("Kd_edit_text", "Kd set to: " + PidTunerProfile.kd.toString())
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            }
+        })
         //Button Listeners
         /*TODO: notify when start/stop changed*/
         start_stop_button = findViewById<Button>(R.id.start_stop_throttle_button);
@@ -370,11 +458,14 @@ class MainActivity : AppCompatActivity() {
                 throttle_state = THROTTLE_STATE.RUNNING;
                 start_stop_button.setText("Stop");
                 start_stop_button.setBackgroundColor( ContextCompat.getColor(this,R.color.stopRed ) );
+                //PidTunerProfile.start_stop_state = 0;
+                PidTunerProfile.WriteAndNotifyStartStop(1,gatt_server);
             }
             else{
                 throttle_state = THROTTLE_STATE.STOPPED;
                 start_stop_button.setText("Start");
                 start_stop_button.setBackgroundColor( ContextCompat.getColor(this,R.color.startGreen ) );
+                PidTunerProfile.WriteAndNotifyStartStop(0,gatt_server);
             }
         }
 
