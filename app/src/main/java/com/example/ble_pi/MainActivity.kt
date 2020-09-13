@@ -186,6 +186,13 @@ object PidTunerProfile //Objects are equivalent to singletons in kotlin
     }
     //Writes: vars are public by default, just write manually if you want to modify
 
+    //When a device is disconnected, we must remove it from our connected devices list
+    //call this function to remove from list
+    fun DeviceDisconnected( device: BluetoothDevice? )
+    {
+        registeredDevices.remove(device)
+    }
+
     fun WriteAndNotifyStartStop(new_state : Int, ble_gatt_server : BluetoothGattServer)
     {
         start_stop_state = new_state;
@@ -224,6 +231,9 @@ class MainActivity : AppCompatActivity() {
                 ble_connection_button.setText("Disconnected");
                 //ble_connection_button.setBackgroundColor( ContextCompat.getColor(this,R.color.stopRed ) );
                 ble_connection_button.setBackgroundColor( ContextCompat.getColor(applicationContext,R.color.stopRed ) );
+
+                //Let the PID profile know a device disconnected
+                PidTunerProfile.DeviceDisconnected(device);
             }
         }
 
