@@ -466,15 +466,15 @@ class MainActivity : AppCompatActivity() {
             if(throttle_state == THROTTLE_STATE.STOPPED){
                 //start_stop_button.setBackgroundColor( Color.parseColor( (R.color.startGreen).toString() ) );
                 throttle_state = THROTTLE_STATE.RUNNING;
-                start_stop_button.setText("Stop");
-                start_stop_button.setBackgroundColor( ContextCompat.getColor(this,R.color.stopRed ) );
+                start_stop_button.setText("Running");
+                start_stop_button.setBackgroundColor( ContextCompat.getColor(this,R.color.startGreen ) );
                 //PidTunerProfile.start_stop_state = 0;
                 PidTunerProfile.WriteAndNotifyStartStop(1,gatt_server);
             }
             else{
                 throttle_state = THROTTLE_STATE.STOPPED;
-                start_stop_button.setText("Start");
-                start_stop_button.setBackgroundColor( ContextCompat.getColor(this,R.color.startGreen ) );
+                start_stop_button.setText("Stopped");
+                start_stop_button.setBackgroundColor( ContextCompat.getColor(this,R.color.stopRed ) );
                 PidTunerProfile.WriteAndNotifyStartStop(0,gatt_server);
             }
         }
