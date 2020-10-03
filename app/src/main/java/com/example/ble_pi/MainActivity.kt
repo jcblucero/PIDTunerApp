@@ -17,6 +17,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import androidx.core.content.ContextCompat
+import java.lang.Exception
 import java.util.*
 
 enum class THROTTLE_STATE {
@@ -407,7 +408,15 @@ class MainActivity : AppCompatActivity() {
 
         throttle_edit_text.addTextChangedListener( object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                PidTunerProfile.throttle_pwm = s.toString().toFloat();
+                try {
+                    //Only accept >= 3 digit decimal: e.g. 14.0, 15.65
+                    if( s.toString().length >= 4) {
+                        PidTunerProfile.throttle_pwm = s.toString().toFloat();
+                    }
+                }
+                catch ( e: Exception){
+                    //Do nothing
+                }
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -420,7 +429,16 @@ class MainActivity : AppCompatActivity() {
         })
         kp_edit_text.addTextChangedListener( object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                PidTunerProfile.kp = s.toString().toFloat();
+                try {
+                    //Only accept  digit decimal with atleast 3 digits: 0.0, 0.6, 0.65
+                    if( s.toString().length >= 3) {
+                        PidTunerProfile.kp = s.toString().toFloat();
+                    }
+                }
+                catch ( e: Exception){
+                    //Do nothing
+                }
+
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -433,7 +451,16 @@ class MainActivity : AppCompatActivity() {
         })
         ki_edit_text.addTextChangedListener( object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                PidTunerProfile.ki = s.toString().toFloat();
+                try {
+                    //Only accept  digit decimal with atleast 3 digits: 0.0, 0.6, 0.65
+                    if( s.toString().length >= 3) {
+                        PidTunerProfile.ki = s.toString().toFloat();
+                    }
+                }
+                catch ( e: Exception){
+                    //Do nothing
+                }
+
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -446,8 +473,17 @@ class MainActivity : AppCompatActivity() {
         })
         kd_edit_text.addTextChangedListener( object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                PidTunerProfile.kd = s.toString().toFloat();
-                Log.d("Kd_edit_text", "Kd set to: " + PidTunerProfile.kd.toString())
+                try {
+                    //Only accept  digit decimal with atleast 3 digits: 0.0, 0.6, 0.65
+                    if( s.toString().length >= 3) {
+                        PidTunerProfile.kd = s.toString().toFloat();
+                        Log.d("Kd_edit_text", "Kd set to: " + PidTunerProfile.kd.toString())
+                    }
+                }
+                catch ( e: Exception){
+                    //Do nothing
+                }
+
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
